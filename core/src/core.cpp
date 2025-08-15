@@ -370,7 +370,7 @@ int sdrpp_main(int argc, char* argv[]) {
     modDir = std::filesystem::absolute(modDir).string();
     if (!std::filesystem::is_directory(modDir)) {
         modDir = (installPrefix / "lib" / "sdrpp" / "plugins").string();
-        flog::info("Modules directory from config doesn't exist, trying " + modDir);
+        flog::info("Modules directory from config doesn't exist, trying {0}", modDir);
 
         if (!std::filesystem::is_directory(modDir)) {
             flog::error("Modules directory doesn't exist! Please make sure that you've configured it correctly in the config.json");
@@ -384,7 +384,7 @@ int sdrpp_main(int argc, char* argv[]) {
     resDir = std::filesystem::absolute(resDir).string();
     if (!std::filesystem::is_directory(resDir)) {
         resDir = (installPrefix / "share" / "sdrpp").string();
-        flog::info("Resource directory from config doesn't exist, trying " + resDir);
+	flog::info("Resource directory from config doesn't exist, trying {0}", resDir);
 
         if (!std::filesystem::is_directory(resDir)) {
             flog::error("Resource directory doesn't exist! Please make sure that you've configured it correctly in config.json (check readme for details)");
