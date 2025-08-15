@@ -358,15 +358,40 @@ int sdrpp_main(int argc, char* argv[]) {
     if (serverMode) { return server::main(); }
 
     core::configManager.acquire();
+    std::string modDir = core::configManager.conf["modulesDirectory"];
     std::string resDir = core::configManager.conf["resourcesDirectory"];
     json bandColors = core::configManager.conf["bandColors"];
     core::configManager.release();
 
+    // TODO: if we want to PR this, make this work on Windows
+    auto installPrefix = std::filesystem::read_symlink("/proc/self/exe").parent_path().parent_path();
+
+    // Assert that the modules directory is absolute and check existence
+    modDir = std::filesystem::absolute(modDir).string();
+    if (!std::filesystem::is_directory(modDir)) {
+        modDir = (installPrefix / "lib" / "sdrpp" / "plugins").string();
+        spdlog::info("Modules directory from config doesn't exist, trying " + modDir);
+
+        if (!std::filesystem::is_directory(modDir)) {
+            spdlog::error("Modules directory doesn't exist! Please make sure that you've configured it correctly in the config.json");
+            return 1;
+        }
+
+        core::configManager.conf["modulesDirectory"] = modDir;
+    }
+
     // Assert that the resource directory is absolute and check existence
     resDir = std::filesystem::absolute(resDir).string();
     if (!std::filesystem::is_directory(resDir)) {
-        flog::error("Resource directory doesn't exist! Please make sure that you've configured it correctly in config.json (check readme for details)");
-        return 1;
+        resDir = (installPrefix / "share" / "sdrpp").string();
+        spdlog::info("Resource directory from config doesn't exist, trying " + resDir);
+
+        if (!std::filesystem::is_directory(resDir)) {
+            spdlog::error("Resource directory doesn't exist! Please make sure that you've configured it correctly in config.json (check readme for details)");
+            return 1;
+        }
+
+        core::configManager.conf["resourcesDirectory"] = resDir;
     }
 
     // Initialize backend
